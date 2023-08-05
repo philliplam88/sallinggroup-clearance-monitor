@@ -1,0 +1,31 @@
+{
+  "name": "sallinggroup-cleareance-monitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./build/index.js",
+    "dev": "tsx watch ./src/index.ts",
+    "build": "npx tsc && tsc-alias -p tsconfig.json"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "pino": "^8.15.0",
+    "undici": "^5.23.0"
+  },
+  "devDependencies": {
+    "@sindresorhus/tsconfig": "^3.0.1",
+    "@types/node": "^18.15.11",
+    "pino-pretty": "^10.0.0",
+    "tsc-alias": "^1.8.6",
+    "tsx": "^3.12.6",
+    "typescript": "^5.0.4"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
