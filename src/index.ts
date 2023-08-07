@@ -1,14 +1,20 @@
 import "./env.js";
 
 // utils
-import { sendNotification, fetchClearance, wait, logger, handle } from "./utils.js";
+import { sendNotification, fetchClearance, wait, logger, handle, startOfDay, fDate } from "./utils.js";
 
 const MONITOR_DELAY = Number(process.env.MONITOR_DELAY_MS);
 const MONITOR_EANS: string[] = process.env.MONITOR_EANS ? process.env.MONITOR_EANS.split(",") : [];
+const SEEN_EANS = new Set<string>();
 
-const lastUpdateStore: { [ean: string]: string } = {};
+async function startMonitor() {
+  /* Reset EANS every 24 hour */
+  setInterval(() => {
+    logger.info(undefined, `Cleaning ${SEEN_EANS.size} seen eans.`);
+    SEEN_EANS.clear();
+  }, startOfDay());
 
-async function monitorLoop() {
+  /* Monitor loop */
   while (true) {
     await monitorClearanceItems();
     await wait(MONITOR_DELAY);
@@ -27,18 +33,22 @@ async function monitorClearanceItems() {
         const { ean, description } = clearance.product;
         const { name: storeName } = store.store;
 
-        if (MONITOR_EANS.includes(ean) && stock > 0) {
-          if (lastUpdateStore[ean] !== lastUpdate) {
-            const title = `"${description}" back in stock! ✅`;
-            const message = `🏪 Store: ${storeName}\n📦 Stock: ${stock}\n🏷️ Price: ${newPrice} (${originalPrice}) DKK\n🕗 Updated At: ${lastUpdate} \n⚡ Created At: ${startTime}`;
+        const isPresentDay = new Date(startTime).toDateString() === new Date().toDateString();
+
+        if (MONITOR_EANS.includes(ean) && stock > 0 && isPresentDay) {
+          if (!SEEN_EANS.has(ean)) {
+            SEEN_EANS.add(ean);
+
+            const title = `"${description}" product created! ✅`;
+            const message = `🏪 Store: ${storeName}\n📦 Stock: ${stock}\n🏷️ Price: ${newPrice} (${originalPrice}) DKK\n🕗 Created At: ${fDate(startTime)}`;
+
+            logger.warn(undefined, `New product! ${description}`);
+
+            // logger.warn({ storeName, product: description, stock, price: originalPrice, startTime }, title);
 
             const [error, _] = await handle(sendNotification(title, message));
 
             if (error) return logger.error(error.message, `Failed to send notification.`);
-
-            lastUpdateStore[ean] = lastUpdate;
-
-            break;
           }
         }
       }
@@ -59,7 +69,7 @@ async function main() {
     `Starting monitor...`
   );
 
-  monitorLoop();
+  startMonitor();
 }
 
 main();

@@ -1,5 +1,6 @@
 declare namespace NodeJS {
   export interface ProcessEnv {
+    NODE_ENV: string;
     SALLING_API_TOKEN: string;
     // Pushvoer
     PUSHOVER_API_TOKEN: string;

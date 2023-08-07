@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./build/index.js",
     "dev": "tsx watch ./src/index.ts",
-    "build": "npx tsc && tsc-alias -p tsconfig.json"
+    "build": "npx tsc && tsc-alias -p tsconfig.json",
+    "scraper": "node ./ean_scraper.mjs"
   },
   "engines": {
     "node": "18.x"
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@sindresorhus/tsconfig": "^3.0.1",
     "@types/node": "^18.15.11",
+    "algoliasearch": "^4.19.1",
     "pino-pretty": "^10.0.0",
     "tsc-alias": "^1.8.6",
     "tsx": "^3.12.6",

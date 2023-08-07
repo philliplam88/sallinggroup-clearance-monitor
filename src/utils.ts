@@ -74,3 +74,17 @@ export const logger = pino.default({
   }),
   base: undefined,
 });
+
+export function startOfDay() {
+  // Calculate the milliseconds until the next day starts (midnight)
+  const now = new Date();
+  const nextDay = new Date(now);
+  nextDay.setDate(now.getDate() + 1);
+  nextDay.setHours(0, 0, 0, 0);
+  return nextDay.getTime() - now.getTime();
+}
+
+export function fDate(timestamp: string) {
+  const formatOptions = { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", timeZoneName: "short" } as const;
+  return new Date(timestamp).toLocaleString("en-US", { ...formatOptions, timeZone: "Europe/Copenhagen" });
+}
