@@ -4,14 +4,15 @@ import "./env.js";
 import { sendNotification, fetchClearance, wait, logger, handle, startOfDay, fDate } from "./utils.js";
 
 const MONITOR_DELAY = Number(process.env.MONITOR_DELAY_MS);
-const MONITOR_EANS: string[] = process.env.MONITOR_EANS ? process.env.MONITOR_EANS.split(",") : [];
-const SEEN_EANS = new Set<string>();
+
+const SEEN_OFFER_EANS = new Set<string>();
+const MONITOR_EANS = new Set<string>(process.env.MONITOR_EANS ? process.env.MONITOR_EANS.split(",") : []);
 
 async function startMonitor() {
   /* Reset EANS every 24 hour */
   setInterval(() => {
-    logger.info(undefined, `Cleaning ${SEEN_EANS.size} seen eans.`);
-    SEEN_EANS.clear();
+    logger.info(undefined, `Cleaning ${SEEN_OFFER_EANS.size} seen offer eans.`);
+    SEEN_OFFER_EANS.clear();
   }, startOfDay());
 
   /* Monitor loop */
@@ -27,26 +28,28 @@ async function monitorClearanceItems() {
 
     if (error) return logger.error(error.message, `Failed to fetch clearance.`);
 
-    for (const store of stores) {
-      for (const clearance of store.clearances) {
-        const { stock, lastUpdate, startTime, newPrice, discount, originalPrice, percentDiscount } = clearance.offer;
-        const { ean, description } = clearance.product;
-        const { name: storeName } = store.store;
+    for await (const store of stores) {
+      for await (const clearance of store.clearances) {
+        const { stock, lastUpdate, startTime, newPrice, discount, originalPrice, percentDiscount, ean: offerEan } = clearance.offer;
+        const { ean: productEan, description, image } = clearance.product;
+        const { name: storeName, address } = store.store;
 
         const isPresentDay = new Date(startTime).toDateString() === new Date().toDateString();
 
-        if (MONITOR_EANS.includes(ean) && stock > 0 && isPresentDay) {
-          if (!SEEN_EANS.has(ean)) {
-            SEEN_EANS.add(ean);
+        if (MONITOR_EANS.has(productEan) && stock > 0 && isPresentDay) {
+          if (!SEEN_OFFER_EANS.has(offerEan)) {
+            SEEN_OFFER_EANS.add(offerEan);
 
             const title = `"${description}" product created! ✅`;
-            const message = `🏪 Store: ${storeName}\n📦 Stock: ${stock}\n🏷️ Price: ${newPrice} (${originalPrice}) DKK\n🕗 Created At: ${fDate(startTime)}`;
+            const message = `🏪 Store: ${storeName}\n📍 Address ${address.street}, ${address.zip} ${
+              address.city
+            }\n📦 Stock: ${stock}\n🏷️ Price: ${newPrice} (${originalPrice}) DKK\n🕗 Created At: ${fDate(startTime)}`;
 
-            logger.warn(undefined, `New product! ${description}`);
+            logger.warn({ storeName, stock }, `New product! ${description}`);
 
             // logger.warn({ storeName, product: description, stock, price: originalPrice, startTime }, title);
 
-            const [error, _] = await handle(sendNotification(title, message));
+            const [error, _] = await handle(sendNotification(title, message, image));
 
             if (error) return logger.error(error.message, `Failed to send notification.`);
           }
@@ -60,11 +63,18 @@ async function monitorClearanceItems() {
   }
 }
 
-async function main() {
+async function init() {
+  if (!MONITOR_EANS.size) {
+    logger.fatal(undefined, `No "MONITOR_EANS" specified to monitor. Please update the .env file. Exiting...`);
+    return process.exit(0);
+  }
+
   logger.info(
     {
       stage: process.env.NODE_ENV || "development",
+      monitor_eans_count: MONITOR_EANS.size,
       monitor_delay: Number(process.env.MONITOR_DELAY_MS),
+      monitor_zip_code: process.env.MONITOR_ZIP_CODE,
     },
     `Starting monitor...`
   );
@@ -72,4 +82,4 @@ async function main() {
   startMonitor();
 }
 
-main();
+init();

@@ -1,28 +1,35 @@
 import { request } from "undici";
 import pino from "pino/pino.js";
-import qs from "node:querystring";
 // types
 import { FoodwasteResponse } from "./types/foodwaste.js";
 
 /* Request func */
 
-export async function sendNotification(title: string, message: string) {
-  const { body, statusCode } = await request("https://api.pushover.net/1/messages.json", {
+export async function sendNotification(title: string, message: string, imageUrl: string) {
+  const imageRes = await request(imageUrl);
+
+  const formData = new FormData();
+
+  formData.append("token", process.env.PUSHOVER_API_TOKEN);
+  formData.append("user", process.env.PUSHOVER_USER_KEY);
+  formData.append("message", message);
+  formData.append("title", title);
+  formData.append("attachment", (await imageRes.body.blob()) as unknown as Blob, "food.jpg");
+  formData.append("ttl", "21600"); // 6 hours
+
+  const notifRes = await request("https://api.pushover.net/1/messages.json", {
     method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-    },
-    body: qs.stringify({
-      token: process.env.PUSHOVER_API_TOKEN,
-      user: process.env.PUSHOVER_USER_KEY,
-      title,
-      message,
-    }),
+    // @ts-expect-error
+    body: formData,
   });
 
-  if (statusCode !== 200) throw new Error(`Failed to send notification. Status code: ${statusCode}`);
+  const notifStatus = notifRes.statusCode;
 
-  return body;
+  if (notifStatus !== 200) throw new Error(`Failed to send notification. Status code: ${notifStatus}`);
+
+  console.log("Notification sent.", await notifRes.body.json());
+
+  return;
 }
 
 export async function fetchClearance(zip_code: string) {
