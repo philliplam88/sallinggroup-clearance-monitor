@@ -27,8 +27,6 @@ export async function sendNotification(title: string, message: string, imageUrl:
 
   if (notifStatus !== 200) throw new Error(`Failed to send notification. Status code: ${notifStatus}`);
 
-  console.log("Notification sent.", await notifRes.body.json());
-
   return;
 }
 

@@ -19,7 +19,6 @@
     "undici": "^5.23.0"
   },
   "devDependencies": {
-    "@sindresorhus/tsconfig": "^3.0.1",
     "@types/node": "^18.15.11",
     "algoliasearch": "^4.19.1",
     "pino-pretty": "^10.0.0",

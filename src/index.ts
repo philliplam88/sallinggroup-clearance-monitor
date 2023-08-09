@@ -8,12 +8,22 @@ const MONITOR_DELAY = Number(process.env.MONITOR_DELAY_MS);
 const SEEN_OFFER_EANS = new Set<string>();
 const MONITOR_EANS = new Set<string>(process.env.MONITOR_EANS ? process.env.MONITOR_EANS.split(",") : []);
 
-async function startMonitor() {
-  /* Reset EANS every 24 hour */
-  setInterval(() => {
+const resetSeenEans = () =>
+  setTimeout(() => {
     logger.info(undefined, `Cleaning ${SEEN_OFFER_EANS.size} seen offer eans.`);
     SEEN_OFFER_EANS.clear();
+    resetSeenEans();
   }, startOfDay());
+
+async function startMonitor() {
+  /* Reset EANS every 24 hour */
+  // setInterval(() => {
+  //   logger.info(undefined, `Cleaning ${SEEN_OFFER_EANS.size} seen offer eans.`);
+  //   SEEN_OFFER_EANS.clear();
+  // }, startOfDay());
+
+  /* Start reset eans cycle */
+  resetSeenEans();
 
   /* Monitor loop */
   while (true) {
