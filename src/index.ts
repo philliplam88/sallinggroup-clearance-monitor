@@ -8,20 +8,15 @@ const MONITOR_DELAY = Number(process.env.MONITOR_DELAY_MS);
 const SEEN_OFFER_EANS = new Set<string>();
 const MONITOR_EANS = new Set<string>(process.env.MONITOR_EANS ? process.env.MONITOR_EANS.split(",") : []);
 
-const resetSeenEans = () =>
-  setTimeout(() => {
+function resetSeenEans() {
+  return setTimeout(() => {
     logger.info(undefined, `Cleaning ${SEEN_OFFER_EANS.size} seen offer eans.`);
     SEEN_OFFER_EANS.clear();
     resetSeenEans();
   }, startOfDay());
+}
 
 async function startMonitor() {
-  /* Reset EANS every 24 hour */
-  // setInterval(() => {
-  //   logger.info(undefined, `Cleaning ${SEEN_OFFER_EANS.size} seen offer eans.`);
-  //   SEEN_OFFER_EANS.clear();
-  // }, startOfDay());
-
   /* Start reset eans cycle */
   resetSeenEans();
 
@@ -55,16 +50,21 @@ async function monitorClearanceItems() {
               address.city
             }\n📦 Stock: ${stock}\n🏷️ Price: ${newPrice} (${originalPrice}) DKK\n🕗 Created At: ${fDate(startTime)}`;
 
-            logger.warn({ storeName, stock }, `New product! ${description}`);
+            logger.info({ storeName, stock }, `New product! ${description}`);
 
             // logger.warn({ storeName, product: description, stock, price: originalPrice, startTime }, title);
 
             const [error, _] = await handle(sendNotification(title, message, image));
 
-            if (error) return logger.error(error.message, `Failed to send notification.`);
+            if (error) {
+              logger.error(error.message, `Failed to send notification.`);
+              continue;
+            }
           }
         }
+        continue;
       }
+      continue;
     }
 
     logger.info(`Completed monitoring for ${stores.length} stores!`);

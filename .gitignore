@@ -127,8 +127,4 @@ dist
 .pnp.*
 
 
-#build/test
-test.mjs
-ean_scrape_output.txt
-ean_scraper.mjs
-ean_settings.json
+.scraping

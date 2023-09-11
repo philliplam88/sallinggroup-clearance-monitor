@@ -7,7 +7,7 @@
     "start": "node ./build/index.js",
     "dev": "tsx watch ./src/index.ts",
     "build": "npx tsc && tsc-alias -p tsconfig.json",
-    "scraper": "node ./ean_scraper.mjs"
+    "scraper": "node .scraping/ean_scraper.mjs"
   },
   "engines": {
     "node": "18.x"

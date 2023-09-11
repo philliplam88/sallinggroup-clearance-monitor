@@ -15,7 +15,7 @@ export async function sendNotification(title: string, message: string, imageUrl:
   formData.append("message", message);
   formData.append("title", title);
   formData.append("attachment", (await imageRes.body.blob()) as unknown as Blob, "food.jpg");
-  formData.append("ttl", "21600"); // 6 hours
+  formData.append("ttl", process.env.PUSHOVER_TTL_SEC as string);
 
   const notifRes = await request("https://api.pushover.net/1/messages.json", {
     method: "POST",
