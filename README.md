@@ -6,7 +6,7 @@ This Project is not affiliated, associated, authorized, endorsed by, or in any w
 
 ## Installation
 
-You can install this tool on any computer. For 24/7 notifications I recommended running this script on  VPS via providers like Digitalocean.
+You can install this tool on any computer. For 24/7 notifications I recommended running this script on VPS via providers like Digitalocean.
 
 1. Install dependencies using [pnpm](https://pnpm.io/installation):
    ```
@@ -29,6 +29,6 @@ You can install this tool on any computer. For 24/7 notifications I recommended 
 
 Layout of the notification messages through Pushover
 
-<img src="assets/notification_lockscreen.png" alt="Notification on lockscreen" height="450px">
-<img src="assets/notification_pushover.jpg" alt="Notification on the pushover app" height="450px">
-
+|                          On lock screen                           |                            On Pushover app                            |
+| :---------------------------------------------------------------: | :-------------------------------------------------------------------: |
+| ![Notification on lockscreen](assets/notification_lockscreen.png) | ![Notification on the pushover app](assets/notification_pushover.jpg) |
